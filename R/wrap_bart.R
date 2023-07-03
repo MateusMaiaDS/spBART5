@@ -27,8 +27,7 @@ rbart <- function(x_train,
                   df_tau_b = 3,
                   prob_tau_b = 0.9,
                   intercept_model = TRUE,
-                  stump = FALSE,
-                  a # "a" are the constant for the constant values to penalise the number of trees
+                  stump = FALSE
                   ) {
 
      # Verifying if x_train and x_test are matrices
@@ -205,7 +204,6 @@ rbart <- function(x_train,
           x_test_scale,
           B_train = B_train_arr,
           B_test = B_test_arr,
-          D = D,
           n_tree,
           n_mcmc,
           n_burn,
@@ -223,8 +221,7 @@ rbart <- function(x_train,
           original_p, # Getting the p available variables
           n_levels, # Getting the sample levels
           intercept_model = intercept_model,
-          stump,
-          a)
+          stump)
 
 
      if(scale_bool){

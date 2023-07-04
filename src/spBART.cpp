@@ -651,8 +651,8 @@ void grow(Node* tree, modelParam &data, arma::vec &curr_res){
                 // cout << " ACCEPTED" << endl;
 
                 // This information is going to mark that terminal node has the split as one ancestor;
-                g_node->left->ancestors(g_node->var_split) = 1;
-                g_node->right->ancestors(g_node->var_split) = 1;
+                g_node->left->ancestors(g_node->var_split)++;
+                g_node->right->ancestors(g_node->var_split)++;
 
                 data.grow_accept++;
         } else {
@@ -927,10 +927,10 @@ void change(Node* tree, modelParam &data, arma::vec &curr_res){
         if(arma::randu(arma::distr_param(0.0,1.0))<acceptance){
 
                 // Need to update the new one and delete the previous
-                c_node->left->ancestors(old_var_split) = 0;
-                c_node->left->ancestors(c_node->var_split) = 1;
-                c_node->right->ancestors(old_var_split) = 0;
-                c_node->right->ancestors(c_node->var_split) = 1;
+                c_node->left->ancestors(old_var_split)--;
+                c_node->left->ancestors(c_node->var_split)++;
+                c_node->right->ancestors(old_var_split)--;
+                c_node->right->ancestors(c_node->var_split)++;
 
         } else {
 
@@ -1223,7 +1223,7 @@ void Node::splineNodeLogLike(modelParam& data, arma::vec &curr_res){
                 // cout << "Error on res_cov" << endl;
 
                 // Adding the bestas prior parcel over the residuals covariance (Only adding if a covariate in within the terminal node)
-                if(ancestors(k)==1){
+                if(ancestors(k)>0){
                         res_cov = res_cov + (1/data.tau_b(k))*B_.slice(k)*data.diag*B_t_.slice(k); // Do not penalise by tree number of trees factor
                 }
                 // Test elements
@@ -1286,7 +1286,7 @@ void updateBeta(Node* tree, modelParam &data){
 
 
                         // Need to set \betas equal to ZERO in case that is not present in that terminal node
-                        if(t_nodes[i]->ancestors(j)==1){
+                        if(t_nodes[i]->ancestors(j)>0){
 
                                 // Cov aux mat
                                 arma::mat cov_sum_aux(t_nodes[i]->n_leaf, 1,arma::fill::zeros);
@@ -1351,7 +1351,7 @@ void updateGamma(Node* tree, modelParam &data){
                 double sum_beta_z_one = 0;
 
                 for(int j = 0; j<data.d_var;j++){
-                        if(t_nodes[i]->ancestors(j)==1){
+                        if(t_nodes[i]->ancestors(j)>0){
                                 sum_beta_z_one = sum_beta_z_one + arma::as_scalar(t_nodes[i]->betas.col(j).t()*(t_nodes[i]->b_t_ones.col(j)));
                         }
                 }
@@ -1392,7 +1392,7 @@ void getPredictions(Node* tree,
                 // cout << "Dimensions of B are " << t_nodes[i] -> B.n_rows << " " << t_nodes[i]->B.n_cols << " " << t_nodes[i]->B.n_slices << endl;
 
                 for(int j = 0;j<data.d_var;j++){
-                        if(t_nodes[i]->ancestors(j)==1){
+                        if(t_nodes[i]->ancestors(j)>0){
                                 betas_b_sum = betas_b_sum + t_nodes[i]->B.slice(j)*t_nodes[i]->betas.col(j); // Only gonna contribute to the predictions in case that
                         }
                 }
@@ -1430,7 +1430,7 @@ void getPredictions(Node* tree,
                 arma::vec betas_b_sum_test(t_nodes[i]->B_test.n_rows,arma::fill::zeros);
 
                 for(int j = 0;j<data.d_var;j++){
-                        if(t_nodes[i]->ancestors(j)==1){
+                        if(t_nodes[i]->ancestors(j)>0){
                                 betas_b_sum_test = betas_b_sum_test + t_nodes[i]->B_test.slice(j)*t_nodes[i]->betas.col(j);
                         }
                 }
@@ -1459,8 +1459,8 @@ void getPredictions(Node* tree,
 
                 // Seeing which ancestors are in the tre
                 for(int j = 0; j < data.x_train.n_cols; j++){
-                        if(t_nodes[i]->ancestors[j]==1){
-                                t_ancestors[j] = 1;
+                        if(t_nodes[i]->ancestors[j]>0){
+                                t_ancestors[j] = t_nodes[i]->ancestors[j];
                         }
                 }
                 t_dept[i] = t_nodes[i]->depth;
